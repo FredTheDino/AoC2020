@@ -10,7 +10,6 @@ while True:
     try:
         tests.append(parse(input()))
     except Exception as e:
-        print(e)
         break
 
 
