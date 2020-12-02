@@ -1,4 +1,10 @@
-LANG=hy
+ifneq ($(PYTHON),)
+	LANG=py
+	INRP=python3
+else
+	LANG=hy
+	INRP=hy
+endif
 FILES=$(wildcard day*.$(LANG))
 INPUT=$(patsubst day%.$(LANG),input%.txt,$(FILES))
 
@@ -6,8 +12,10 @@ INPUT=$(patsubst day%.$(LANG),input%.txt,$(FILES))
 
 all: $(INPUT)
 
-input%.txt: day%.$(LANG)
+input%.txt: day%.$(LANG) FORCE
 	@ echo 
 	@ echo == $< ==
-	@ time $(LANG) $< < $@
+	@ time $(INRP) $< < $@
 	@ touch $@
+
+FORCE:
