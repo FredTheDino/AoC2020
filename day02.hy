@@ -3,8 +3,7 @@
   (while True
       (try (.append numbers (-> (input) f))
           (except [Exception] (break))))
-  (return numbers)
-)
+  (return numbers))
 
 (defn parse [line]
   (-> (.replace line ":" "")
