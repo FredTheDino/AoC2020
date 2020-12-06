@@ -12,7 +12,7 @@ INPUT=$(patsubst day%.$(LANG),input%.txt,$(FILES))
 
 all: $(INPUT)
 
-input%.txt: day%.$(LANG) FORCE
+input%.txt: $(LANG)%.$(LANG) FORCE
 	@ echo 
 	@ echo == $< ==
 	@ time $(INRP) $< < $@

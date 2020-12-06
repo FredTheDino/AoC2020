@@ -1,3 +1,5 @@
+import sys
+
 def number_gen(step=1):
     n = 0
     while True:
@@ -6,20 +8,12 @@ def number_gen(step=1):
 
 
 def parse_stdin():
-    width = 0
-    height = 0
     trees = set()
-    for y in number_gen():
-        try:
-            line = input()
-        except Exception as e:
-            break
-        width = len(line)
-        height = y + 1
+    for y, line in enumerate(sys.stdin.readlines()):
         for x, c in enumerate(line):
             if c == "#":
                 trees.add((x, y))
-    return width, height, trees
+    return x, y + 1, trees
 
 
 def count_hits(w, h, dx, dy, ts):
@@ -31,6 +25,7 @@ def count_hits(w, h, dx, dy, ts):
 
 if __name__ == "__main__":
     w, h, ts = parse_stdin()
+    print(w, h, len(ts))
 
     print(count_hits(w, h, 3, 1, ts))
 
