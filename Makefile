@@ -1,21 +1,21 @@
-ifneq ($(PYTHON),)
-	LANG=py
-	INRP=python3
-else
+ifneq ($(HY),)
 	LANG=hy
 	INRP=hy
+else
+	LANG=py
+	INRP=python3
 endif
-FILES=$(wildcard day*.$(LANG))
-INPUT=$(patsubst day%.$(LANG),input%.txt,$(FILES))
+FILES=$(wildcard $(LANG)*.$(LANG))
+INPUT=$(patsubst $(LANG)%.$(LANG),input%.txt,$(FILES))
+DAYS=$(patsubst $(LANG)%.$(LANG),%,$(FILES))
 
-.PHONY: INPUT
+.PHONY: INPUT all
 
-all: $(INPUT)
+all: $(DAYS) FORCE
 
-input%.txt: $(LANG)%.$(LANG) FORCE
+%: $(LANG)%.$(LANG) FORCE
 	@ echo 
 	@ echo == $< ==
-	@ time $(INRP) $< < $@
-	@ touch $@
+	@ time $(INRP) $< < input$@.txt
 
 FORCE:

@@ -69,7 +69,6 @@ def valid2(x):
         if k not in x:
             return False
         if not f(x[k]):
-            print(k, "not valid")
             return False
     return True
 
