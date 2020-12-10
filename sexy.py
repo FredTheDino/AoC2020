@@ -43,8 +43,8 @@ def run_and_time_all_days(times=1):
         yield run_and_time_day(d, times)
 
 
-def run_gu():
-    out = run_as("cd gu/20/py/; python3 aoc20.py --no-decorate")
+def run_gu(times=1):
+    out = run_as(["cd gu/20/py/; python3 aoc20.py --no-decorate"])
     result = dict()
     for line in out.split("\n"):
         if not line: continue
@@ -54,15 +54,17 @@ def run_gu():
 
 
 def setup_gu():
-    run_as("cd gu; git stash; git pull --force;")
-    run_as("mkdir -p gu/20/input/")
+    run_as(["cd gu; git stash; git pull --force;"])
+    run_as(["mkdir -p gu/20/input/"])
     for day in find_all_days():
-        run_as(f"cp -f input{day:02}.txt gu/20/input/{day:02}")
+        run_as([f"cp -f input{day:02}.txt gu/20/input/{day:02}"])
 
 
 def sexy_print(times=1):
-    gu_res = run_gu()
-    print("       -- AoC 2020 --")
+    gu_res = run_gu(times)
+    print(" = AoC 2020 =")
+    wins = {"ed":0, "??":0, "gu": 0}
+    longest = 0
     for day, _, avg, a, b in run_and_time_all_days(times):
         delta = ""
         if day in gu_res:
@@ -76,12 +78,18 @@ def sexy_print(times=1):
             gu_t, gu_a, gu_b = 0, "", ""
             winner = "ed"
 
-        print(f"{day:02} {winner:2<} ", end="")
+        line = f"{day:02} {winner:2<} "
         if delta:
-            print(f"| E{delta:<2} |", end="")
+            line += f"| E{delta:<2} |"
         else:
-            print(f"| --- |", end="")
-        print(f"{a:>11} {b:<11}")
+            line += f"| --- |"
+        line += f"{a:>11} {b:<11}"
+        print(line)
+        longest = max(len(line), longest)
+        wins[winner] += 1
 
-# setup_gu()
-sexy_print(2)
+    print("=" * longest)
+    print(f"   ed: {wins['ed']:>2} gu: {wins['gu']:>2}")
+
+setup_gu()
+sexy_print(1)
