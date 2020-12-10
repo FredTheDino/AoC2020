@@ -24,7 +24,7 @@ def run_until_dup(prog):
         elif code == "jmp":
             ip += oper - 1
 
-print(run_until_dup(prog))
+print(run_until_dup(prog)[1])
 
 def run_and_try_everything(prog):
     def all_mutations():

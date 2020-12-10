@@ -25,8 +25,6 @@ def count_hits(w, h, dx, dy, ts):
 
 if __name__ == "__main__":
     w, h, ts = parse_stdin()
-    print(w, h, len(ts))
-
     print(count_hits(w, h, 3, 1, ts))
 
     slopes = [(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)]
