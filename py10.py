@@ -29,6 +29,7 @@ print(jolt_diff[0] * jolt_diff[2])
 
 # Part 2
 
+# The slow way
 @cache
 def count_paths(jolt):
     if jolt == 0:
@@ -38,3 +39,16 @@ def count_paths(jolt):
     return sum(count_paths(jolt - o) for o in [1, 2, 3])
 
 print(count_paths(max(numbers)))
+
+# The faster way
+# counts = [0] * (max(numbers) + 1)
+# counts[0] = 1
+# for n in sorted(numbers):
+#     ways = 0
+#     if n > 2:
+#         ways += counts[n - 3]
+#     if n > 1:
+#         ways += counts[n - 2]
+#     ways += counts[n - 1]
+#     counts[n] = ways
+# print(counts[max(numbers)])
