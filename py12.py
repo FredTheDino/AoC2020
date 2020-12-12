@@ -44,7 +44,6 @@ def rotate_cw(a, b):
 def solve2():
     way_point = (10, 1)
     pos = (0, 0)
-    dir = 0
     for d, n in moves:
         if d == "L":
             for _ in range((n // 90) % 4):
