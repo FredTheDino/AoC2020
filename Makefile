@@ -3,7 +3,7 @@ ifneq ($(HY),)
 	INRP=hy
 else
 	LANG=py
-	INRP=python3
+	INRP=pypy3
 endif
 FILES=$(wildcard $(LANG)*.$(LANG))
 INPUT=$(patsubst $(LANG)%.$(LANG),input%.txt,$(FILES))
