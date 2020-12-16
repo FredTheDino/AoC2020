@@ -3,17 +3,18 @@ from string import ascii_letters
 from time import time
 from math import log, floor
 
+# intrp = "pypy3"
+intrp = "python3"
 
-def run_as(cmd, stdin=None):
+def run_as(cmd, stdin=None, can_fail=False):
     out = run(cmd,
               input=stdin,
               encoding="utf-8",
               shell=True,
               capture_output=True)
-    if out.returncode:
+    if out.returncode and not can_fail:
         print("Program failed:", *cmd)
-        print(out.stderr)
-        assert False
+        print(out.stdout, out.stderr)
     return out.stdout
 
 
@@ -30,12 +31,12 @@ def run_and_time_day(day, times=1):
     start = time()
     for _ in range(times):
         stdin = open(f"input{day:02}.txt").read()
-        out = run_as([f"python3 py{day:02}.py"], stdin)
+        out = run_as([f"{intrp} py{day:02}.py"], stdin)
     end = time()
     taken = end - start
     average = taken / times
     p0, p1 = out.split("\n")[0:2]
-    return day, taken, average, p0, p1
+    return taken, average, p0, p1
 
 
 def run_and_time_all_days(times=1):
@@ -43,14 +44,19 @@ def run_and_time_all_days(times=1):
         yield run_and_time_day(d, times)
 
 
-def run_gu(times=1):
-    out = run_as(["cd gu/20/py/; python3 aoc20.py --no-decorate"])
-    result = dict()
-    for line in out.split("\n"):
-        if not line: continue
-        day, t1, a, t2, b = line.split()
-        result[int(day)] = (float(t1) + float(t2)) / 100.0, a, b
-    return result
+def run_and_time_gu_day(day, times=1):
+    start = time()
+    for _ in range(times):
+        out = run_as([f"cd gu/20/py/; {intrp} d{day:02}.py"])
+    end = time()
+    taken = end - start
+    average = taken / times
+    p0, p1 = out.split("\n")[0:2]
+    return taken, average, p0, p1
+
+def run_all_gu(times=1):
+    for d in find_all_days():
+        yield run_and_time_gu_day(d, times)
 
 
 def setup_gu():
@@ -61,35 +67,36 @@ def setup_gu():
 
 
 def sexy_print(times=1):
-    gu_res = run_gu(times)
     print(" = AoC 2020 =")
     wins = {"ed":0, "??":0, "gu": 0}
     longest = 0
-    for day, _, avg, a, b in run_and_time_all_days(times):
-        delta = ""
-        if day in gu_res:
-            gu_t, gu_a, gu_b = gu_res[day]
-            if a == gu_a and b == gu_b:
-                delta = floor(log(abs(avg - gu_t), 10))
-                winner = "ed" if avg < gu_t else "gu"
-            else:
-                winner = "??"
+    total_ed, total_gu = 0, 0
+    for day, (_, gu_avg, gu_a, gu_b), (_, ed_avg, ed_a, ed_b) in zip(
+        find_all_days(), run_all_gu(times), run_and_time_all_days(times)):
+
+        total_ed += ed_avg
+        total_gu += gu_avg
+
+        delta = None
+        if ed_a == gu_a and ed_b == gu_b:
+            delta = round(abs(ed_avg - gu_avg), 4)
+            winner = "ed" if ed_avg < gu_avg else "gu"
         else:
-            gu_t, gu_a, gu_b = 0, "", ""
-            winner = "ed"
+            winner = "??"
 
         line = f"{day:02} {winner:2<} "
         if delta:
-            line += f"| E{delta:<2} |"
+            line += f"| {delta:<6} |"
         else:
-            line += f"| --- |"
-        line += f"{a:>11} {b:<11}"
+            line += f"| ------ |"
+        line += f"{ed_a:>15} {ed_b:<15}"
         print(line)
         longest = max(len(line), longest)
         wins[winner] += 1
 
     print("=" * longest)
-    print(f"   ed: {wins['ed']:>2} gu: {wins['gu']:>2}")
+    print(f"   ed: {wins['ed']:<7} gu: {wins['gu']:<7}")
+    print(f"   ed: {round(total_ed, 3):<7} gu: {round(total_gu, 3):<7}")
 
 setup_gu()
 sexy_print(1)
