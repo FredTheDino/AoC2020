@@ -3,13 +3,15 @@ ifneq ($(HY),)
 	INRP=hy
 else
 	LANG=py
-	INRP=pypy3
+	INRP=python3
 endif
 FILES=$(wildcard $(LANG)*.$(LANG))
 INPUT=$(patsubst $(LANG)%.$(LANG),input%.txt,$(FILES))
 DAYS=$(patsubst $(LANG)%.$(LANG),%,$(FILES))
 
 .PHONY: INPUT all
+
+today: $(shell date +%d)
 
 all: $(DAYS) FORCE
 
