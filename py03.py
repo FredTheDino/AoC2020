@@ -23,7 +23,8 @@ def count_hits(w, h, dx, dy, ts):
         hits += (x % w, y) in ts
     return hits
 
-if __name__ == "__main__":
+
+def main():
     w, h, ts = parse_stdin()
     print(count_hits(w, h, 3, 1, ts))
 
@@ -32,3 +33,7 @@ if __name__ == "__main__":
     for x, y in slopes:
         prod *= count_hits(w, h, x, y, ts)
     print(prod)
+
+
+if __name__ == "__main__":
+    main()

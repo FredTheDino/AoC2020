@@ -98,5 +98,6 @@ def sexy_print(times=1):
     print(f"   ed: {wins['ed']:<7} gu: {wins['gu']:<7}")
     print(f"   ed: {round(total_ed, 3):<7} gu: {round(total_gu, 3):<7}")
 
-setup_gu()
-sexy_print(1)
+if __name__ == "__main__":
+    setup_gu()
+    sexy_print(1)
