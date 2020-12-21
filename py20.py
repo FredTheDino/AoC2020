@@ -1,3 +1,4 @@
+from itertools import product
 from collections import defaultdict
 import sys
 
@@ -39,98 +40,93 @@ for tile in sys.stdin.read().split("\n\n"):
     edges[east].add(tile_id)
     edges[south].add(tile_id)
     edges[west].add(tile_id)
-    tiles[tile_id] = north, east, south, west
+    tiles[tile_id] = north, east, south, west, data
 
+NORTH = 0
+EAST = 1
+SOUTH = 2
+WEST = 3
 
-def match(args):
-    a, b = args
-    return a == b or b is None or a is None
-
+possible = {}
+for id, (n, e, s, w, _) in tiles.items():
+    possible[id] = [
+        edges[n] - set([id]),
+        edges[e] - set([id]),
+        edges[s] - set([id]),
+        edges[w] - set([id]),
+    ]
 
 def all_orientations(n, e, s, w):
-    yield n, e, s, w
-    yield w, n, e, s
-    yield s, w, n, e
-    yield e, s, w, n
+    yield n, e, s, w, ""
+    yield w, n, e, s, "r"
+    yield s, w, n, e, "rr"
+    yield e, s, w, n, "rrr"
 
-    yield s, e, n, w
-    yield w, s, e, n
-    yield n, w, s, e
-    yield e, n, w, s
-
-
-def get_neighbors(x, y):
-    yield x, y + 1
-    yield x + 1, y
-    yield x, y - 1
-    yield x - 1, y
+    yield s, e, n, w, "f"
+    yield w, s, e, n, "fr"
+    yield n, w, s, e, "frr"
+    yield e, n, w, s, "frrr"
 
 
-def get_adjecant(x, y):
-    yield x, y + 1, 2
-    yield x + 1, y, 3
-    yield x, y - 1, 0
-    yield x - 1, y, 1
-
-
-def solve(x, y, tiles, edges, placed, used, position):
-    if x < 0 or (len(tiles) ** 0.5) <= x:
+def solve(x, y, tiles, reqs, position):
+    w = len(tiles) ** 0.5
+    if w <= x:
         return True
 
-    if y < 0 or (len(tiles) ** 0.5) <= y:
+    if w <= y:
         return True
 
-    if (x, y, 0) in placed:
+    if (x, y) in position:
         return True
 
-    given = []
-    if placed:
-        possible = None
-        for p in get_adjecant(x, y):
-            conn = placed.get(p, None)
-            given.append(conn)
+    any_key = set(tiles.keys())
+    left = (x - 1, y), EAST
+    top  = (x, y - 1), SOUTH
+    alts = reqs.get(left, any_key) & reqs.get(top, any_key)
 
-            if conn:
-                if possible is None:
-                    possible = edges[conn].copy()
-                else:
-                    possible = possible & edges[conn]
-        possible -= used
-    else:
-        possible = tiles.keys()
-        given = [None] * 4
-
-    for id in possible:
-        for sides in all_orientations(*tiles[id]):
-            if not all(map(match, zip(sides, given))):
+    for id in alts:
+        if x == 0 and y == 0:
+            neigbors = sum(map(len, reqs[id]))
+            if 1 + 1 + 0 + 0 != neigbors:
                 continue
 
-            used.add(id)
-            positions[x, y] = id
-            placed[x, y, 0] = sides[0]
-            placed[x, y, 1] = sides[1]
-            placed[x, y, 2] = sides[2]
-            placed[x, y, 3] = sides[3]
+        for n, e, s, w, o in all_orientations(*reqs[id]):
+            if x == 0 and len(w) != 0:
+                continue
+            if y == 0 and len(n) != 0:
+                continue
 
-            for nx, ny in get_neighbors(x, y):
-                if not solve(nx, ny, tiles, edges, placed, used, positions):
-                    break
-            else:
-                return True
+            expected = position.get((x, y - 1), None)
+            if expected and expected not in n:
+                continue
 
-            del positions[x, y]
-            del placed[x, y, 0]
-            del placed[x, y, 1]
-            del placed[x, y, 2]
-            del placed[x, y, 3]
-            used.remove(id)
+            expected = position.get((x - 1, y), None)
+            if expected and expected not in w:
+                continue
+
+            reqs_c = reqs.copy()
+            pos_c = position.copy()
+
+            reqs_c[(x, y), EAST]  = e
+            reqs_c[(x, y), SOUTH] = s
+            pos_c[x, y] = (id, o)
+
+            if not solve(x + 1, y, tiles, reqs_c, pos_c):
+                continue
+            if not solve(x, y + 1, tiles, reqs_c, pos_c):
+                continue
+
+            position.update(pos_c)
+
+            return True
     return False
 
 
-# 46333628948161 -- Too high
 positions = {}
-placed = {}
-used = set()
-result = solve(0, 0, tiles, edges, placed, used, positions)
-print(result, placed)
-print(positions[0, 0] * positions[0, 11] * positions[11, 0] * positions[0, 0])
+result = solve(0, 0, tiles, possible, positions)
+lo, hi = 0, max(positions.keys())[0]
+prod = 1
+for p in product([lo, hi], repeat=2):
+    prod *= positions[p][0]
+print(prod)
+
