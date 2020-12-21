@@ -1,4 +1,4 @@
-from itertools import product
+from itertools import product, combinations, repeat
 from collections import defaultdict
 import sys
 
@@ -97,11 +97,11 @@ def solve(x, y, tiles, reqs, position):
                 continue
 
             expected = position.get((x, y - 1), None)
-            if expected and expected not in n:
+            if expected and expected[0] not in n:
                 continue
 
             expected = position.get((x - 1, y), None)
-            if expected and expected not in w:
+            if expected and expected[0] not in w:
                 continue
 
             reqs_c = reqs.copy()
@@ -109,7 +109,7 @@ def solve(x, y, tiles, reqs, position):
 
             reqs_c[(x, y), EAST]  = e
             reqs_c[(x, y), SOUTH] = s
-            pos_c[x, y] = (id, o)
+            pos_c[x, y] = id, o
 
             if not solve(x + 1, y, tiles, reqs_c, pos_c):
                 continue
@@ -122,6 +122,7 @@ def solve(x, y, tiles, reqs, position):
     return False
 
 
+# 46333628948161 -- Too high
 positions = {}
 result = solve(0, 0, tiles, possible, positions)
 lo, hi = 0, max(positions.keys())[0]
@@ -130,3 +131,97 @@ for p in product([lo, hi], repeat=2):
     prod *= positions[p][0]
 print(prod)
 
+def strip(data):
+    return [c[1:-1] for c in data[1:-1]]
+
+def flip_h(data):
+    return [c[::-1] for c in data]
+
+def flip_v(data):
+    return data[::-1]
+
+def rotate(data):
+    return ["".join(c) for c in zip(*list(data)[::-1])]
+
+transformed_tiles = {}
+for x in range(lo, hi + 1):
+    for y in range(lo, hi + 1):
+        id, o = positions[x, y]
+        tile = tiles[id][4]
+
+        for c in o:
+            if "f" == c:
+                tile = flip_v(tile)
+            else:
+                tile = rotate(tile)
+
+        if y != 0:
+            prev = transformed_tiles[x, y - 1][-1]
+            if prev != tile[0] and y != 0:
+                tile = flip_h(tile)
+        transformed_tiles[x, y] = tile
+
+full = ["" for y in range((hi + 1) * 8)]
+for x in range(lo, hi + 1):
+    for y in range(lo, hi + 1):
+        tile = strip(transformed_tiles[x, y])
+        for ey, row in enumerate(tile):
+            full[y * 8 + ey] += row
+
+print("\n".join(full))
+
+def tuple_add(a):
+    return tuple(map(sum, zip(*a)))
+
+monster = \
+"""
+                  #
+#    ##    ##    ###
+ #  #  #  #  #  #
+"""
+monster = [(x, y - 1)
+           for y, line in enumerate(monster.split("\n"))
+           for x, c in enumerate(line) if c == "#"]
+
+from copy import deepcopy
+
+for _, _, _, _, o in all_orientations(None, None, None, None):
+    ghost = deepcopy(full)
+    for c in o:
+        if "f" == c:
+            ghost = flip_v(ghost)
+        else:
+            ghost = rotate(ghost)
+
+    seamonsters = set()
+    for y in range(lo, len(ghost) - 2):
+        for x in range(lo, len(ghost) - 19):
+            monster_pos = set(map(tuple_add, zip(repeat((x, y)), monster)))
+            if all(ghost[y][x] == "#" for x, y in monster_pos):
+                seamonsters = seamonsters | monster_pos
+
+    if not seamonsters:
+        continue
+
+    count = 0
+    for y, line in enumerate(ghost):
+        for x, c in enumerate(line):
+            if c == "#" and (x, y) not in seamonsters:
+                count += 1
+    print(count)
+
+    for y, line in enumerate(ghost):
+        for x, c in enumerate(line):
+            if (x, y) in seamonsters:
+                print("O", end="")
+            elif c == "#":
+                print("~", end="")
+            elif c == ".":
+                print(" ", end="")
+        print()
+
+# 2716 Too high?
+# 2727 Is wrong
+# 2729 Too high
+# 2757 Is wrong
+# 2817 Too high
