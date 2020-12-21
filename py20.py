@@ -168,7 +168,7 @@ for x in range(lo, hi + 1):
         for ey, row in enumerate(tile):
             full[y * 8 + ey] += row
 
-print("\n".join(full))
+# print("\n".join(full))
 
 def tuple_add(a):
     return tuple(map(sum, zip(*a)))
@@ -210,15 +210,15 @@ for _, _, _, _, o in all_orientations(None, None, None, None):
                 count += 1
     print(count)
 
-    for y, line in enumerate(ghost):
-        for x, c in enumerate(line):
-            if (x, y) in seamonsters:
-                print("O", end="")
-            elif c == "#":
-                print("~", end="")
-            elif c == ".":
-                print(" ", end="")
-        print()
+    # for y, line in enumerate(ghost):
+    #     for x, c in enumerate(line):
+    #         if (x, y) in seamonsters:
+    #             print("O", end="")
+    #         elif c == "#":
+    #             print("~", end="")
+    #         elif c == ".":
+    #             print(" ", end="")
+    #     print()
 
 # 2716 Too high?
 # 2727 Is wrong
