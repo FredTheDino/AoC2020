@@ -12,9 +12,6 @@ def run_as(cmd, stdin=None, can_fail=False):
               encoding="utf-8",
               shell=True,
               capture_output=True)
-    if out.returncode and not can_fail:
-        print("Program failed:", *cmd)
-        print(out.stdout, out.stderr)
     return out.stdout
 
 
@@ -47,11 +44,17 @@ def run_and_time_all_days(times=1):
 def run_and_time_gu_day(day, times=1):
     start = time()
     for _ in range(times):
-        out = run_as([f"cd gu/20/py/; {intrp} d{day:02}.py"])
+        try:
+            out = run_as([f"cd gu/20/py/; {intrp} d{day:02}.py"])
+        except:
+            return 0, 0, "", ""
     end = time()
     taken = end - start
     average = taken / times
-    p0, p1 = out.split("\n")[0:2]
+    try:
+        p0, p1 = out.split("\n")[0:2]
+    except:
+        p0, p1 = "", ""
     return taken, average, p0, p1
 
 def run_all_gu(times=1):
