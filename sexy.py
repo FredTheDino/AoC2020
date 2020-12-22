@@ -92,6 +92,13 @@ def sexy_print(times=1):
             line += f"| {delta:<6} |"
         else:
             line += f"| ------ |"
+
+        if len(str(ed_a)) > 14:
+            ed_a = str(ed_a)[:12] + "..."
+
+        if len(str(ed_b)) > 14:
+            ed_b = str(ed_b)[:12] + "..."
+
         line += f"{ed_a:>15} {ed_b:<15}"
         print(line)
         longest = max(len(line), longest)
