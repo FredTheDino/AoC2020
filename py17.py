@@ -1,41 +1,83 @@
 import sys
 from itertools import product
+from functools import cache
+from collections import defaultdict
 
 def tuple_add(a, b):
     return tuple(map(sum, zip(a, b)))
 
-active = set()
+@cache
+def neighbors(p):
+    return [tuple_add(p, d)
+            for d in product([-1, 0, 1], repeat=len(p))
+            if not all(x == 0 for x in d)]
+
+
+def update(counts, active, p, alive):
+    if alive and p in active:
+        return
+
+    if not alive and p not in active:
+        return
+
+    delta = 1 if alive else -1
+    for n in neighbors(p):
+        counts[n] += delta
+
+
+active3 = set()
+counts3 = defaultdict(int)
+active4 = set()
+counts4 = defaultdict(int)
+
 for y, line in enumerate(sys.stdin.readlines()):
     for x, c in enumerate(line):
         if c == "#":
-            active.add((x, y, 0))
-lo = (-1, -1, -1)
-hi = (x + 1, y + 1, 1)
+            p = x, y, 0
 
-def neighbors(p, dim):
-    for d in product([-1, 0, 1], repeat=dim):
-        if all(x == 0 for x in d):
+            # It'll be out little secret...
+            active3.add(p)
+            for n in neighbors(p):
+                counts3[n] += 1
+
+            active4.add((*p, 0))
+            for n in neighbors((*p, 0)):
+                counts4[n] += 1
+
+
+def step(active, counts):
+    next_counts = counts.copy()
+    next_active = active.copy()
+
+    for p, count in counts.items():
+        alive = ((p in active and 2 <= count <= 3) or
+                 (p not in active and count == 3))
+
+        if alive and p in active:
             continue
-        yield tuple_add(p, d)
 
+        if not alive and p not in active:
+            continue
 
-def step(active, lo, hi, dim):
-    next_active = set()
-    for p in product(*[range(a, b + 1) for a, b in zip(lo, hi)]):
-        num_active = sum(n in active for n in neighbors(p, dim=dim))
-        if p in active and num_active in [2, 3]:
+        if alive:
+            delta = 1
             next_active.add(p)
-        elif p not in active and num_active == 3:
-            next_active.add(p)
+        else:
+            delta = -1
+            next_active.remove(p)
 
-    return next_active, tuple_add(lo, tuple([-1] * dim)), tuple_add(hi, tuple([1] * dim))
+        for n in neighbors(p):
+            next_counts[n] += delta
+
+    return next_active, next_counts
 
 
-def solve(active, lo, hi):
+def solve(active, counts):
     for _ in range(6):
-        active, lo, hi = step(active, lo, hi, len(hi))
+        active, counts = step(active, counts)
     print(len(active))
 
-solve(active, lo, hi)
-solve(set((*t, 0) for t in active), (*lo, -1), (*hi, 1))
+solve(active3, counts3)
+
+solve(active4, counts4)
 
