@@ -23,7 +23,7 @@ for line in sys.stdin.readlines():
         queries.append(line)
 
 
-def match(rules, rule, string, recurse=True):
+def match(rules, rule, string, special=True):
     # EOF
     if not string:
         return False, ""
@@ -37,7 +37,7 @@ def match(rules, rule, string, recurse=True):
     for alt in rule:
         string_copy = string
         for subrule in alt:
-            is_match, string_copy = match(rules, subrule, string_copy)
+            is_match, string_copy = match(rules, subrule, string_copy, special)
             if not is_match:
                 break
         else:
@@ -49,17 +49,14 @@ def is_match(rules, string):
     result = match(rules, 0, string)
     return result[0] and result[1] == ""
 
-#print(sum(is_match(rules, query) for query in queries))
-
-for line in ["8: 42 8 | 42", "11: 42 11 31 | 42 31"]:
-    n, rule = parse_rule(line)
-    rules[n] = rule
-
-
-for query in queries:
-    if is_match(rules, query):
-        print("MATCH", query)
-    else:
-        print("-----", query)
-
 print(sum(is_match(rules, query) for query in queries))
+
+def possible_rules(rules):
+    for i in range(1, 10):
+        for j in range(1, 10):
+            rules[8] = [[42] * i]
+            rules[11] = [[42] * j + [31] * j]
+            yield rules
+
+
+print(sum(any(is_match(alt, query) for alt in possible_rules(rules)) for query in queries))
