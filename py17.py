@@ -1,28 +1,14 @@
 import sys
 from itertools import product
-from functools import cache
 from collections import defaultdict
 
 def tuple_add(a, b):
     return tuple(map(sum, zip(a, b)))
 
-@cache
 def neighbors(p):
     return [tuple_add(p, d)
             for d in product([-1, 0, 1], repeat=len(p))
             if not all(x == 0 for x in d)]
-
-
-def update(counts, active, p, alive):
-    if alive and p in active:
-        return
-
-    if not alive and p not in active:
-        return
-
-    delta = 1 if alive else -1
-    for n in neighbors(p):
-        counts[n] += delta
 
 
 active3 = set()
@@ -46,28 +32,16 @@ for y, line in enumerate(sys.stdin.readlines()):
 
 
 def step(active, counts):
-    next_counts = counts.copy()
-    next_active = active.copy()
+    next_counts = defaultdict(int)
+    next_active = set()
 
     for p, count in counts.items():
-        alive = ((p in active and 2 <= count <= 3) or
-                 (p not in active and count == 3))
+        is_set = p in active
 
-        if alive and p in active:
-            continue
-
-        if not alive and p not in active:
-            continue
-
-        if alive:
-            delta = 1
+        if ((is_set and 2 <= count <= 3) or (not is_set and count == 3)):
             next_active.add(p)
-        else:
-            delta = -1
-            next_active.remove(p)
-
-        for n in neighbors(p):
-            next_counts[n] += delta
+            for n in neighbors(p):
+                next_counts[n] += 1
 
     return next_active, next_counts
 
